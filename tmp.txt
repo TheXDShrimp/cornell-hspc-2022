@@ -1,0 +1,1351 @@
+in this part of the lecture i want to dive a little bit into homogeneous coordinates homogeneous coordinates are tool that
+0:05
+we're using in photogrammetry computer vision and robotics very frequently because it
+0:11
+allows us to do certain tasks much more elegantly compared to the euclidean space
+0:16
+and therefore it's an important mathematical toolbox that you can use in order to write down
+0:22
+equations in a very compact fashion and for example perform transformation elegantly
+0:28
+and also have possibilities to represent for example points or geometric objects which are infinitely far away with
+0:35
+finite numbers and that's something which is also an important thing um and becomes very handy when we are
+0:43
+performing performing state estimation problems or want to represent certain equations that involves points that are
+0:49
+potentially far away so why a projective space what homogeneous coordinates are
+0:55
+the reason for that is that we often use cameras in our discipline and cameras
+1:01
+basically take the 3d world and project them onto a 2d image and so there's a popular
+1:06
+pinhole camera model and that you all know so you have an object in the 3d world
+1:12
+so this is our object over here and so you for example light source like the sun this is reflecting light
+1:20
+towards the camera and the ray passes through that pinhole and generates an image on the image
+1:26
+plane over here often um although this kind of the real image plane we're using a virtual
+1:31
+um image over here which sits again in front of the camera although this doesn't exist in reality it's sometimes easier
+1:38
+to visualize things it's basically this image plane rotated around the pinhole in front of the camera so the object
+1:44
+actually stands upside down and the what happens in this pinhole camera model
+1:50
+you have this small hole which is infinitely small and all the rays all the light
+1:57
+that reaches my image plane passes through this point so it's basically a bundle of rays of rays of light that
+2:05
+reaches my image plane and [Music] the the what happens over here is this
+2:13
+light generates an image and this image is a projection from the 3d world
+2:18
+onto the 2d image plane and it's a projection as we say that so it will as
+2:24
+you will see is a projective space is um more can more elegantly describe this model and therefore
+2:32
+we are frequently using it because whenever projections are involved certain things can be formulated simply in a more compact fashion
+2:38
+especially transformations which makes this very very attractive so if we have an image
+2:46
+for example such an image that we have generated here the question is what can we say about
+2:51
+the geometry of the image so for example if we have certain
+2:57
+lines do parallel lines from the real world stay parallel in that image or are do
+3:04
+angles between lines change so if we have in the 3d world two lines which have a certain angle
+3:11
+with respect to each other is this angle preserved in an image and it turns out for example that this
+3:17
+is not the case so it's not an angle preserving mapping but typically straight lines stay straight lines at
+3:24
+least in the pinhole camera model and there are certain properties of the geometric objects how they are changed
+3:30
+when i'm projecting them from the 3d world into an image just to mention a few things so straight line
+3:37
+preserving mapping means that straight lines are mapped into straight lines and this is something
+3:43
+that at least if you don't have lens distortions if you just have kind of the basic pinhole model that's actually the case
+3:48
+so if you have a straight line in the real world it stays a straight line in your image it is not length preserving that means the um you
+3:56
+can have two objects in the real world which have the same size but maybe maybe map to a different size
+4:02
+in our image plane for example if one is further away uh from the pinhole camera then the then the other object this
+4:09
+leads to a different size in the object in the image space and it's not an angle preserving mapping
+4:15
+that means the angle between two lines for example doesn't stay the same if you project them from the three world
+4:20
+onto the 2d image plane there's an example for as we can see here so these are two
+4:26
+lines which are parallel in the real world there's also two lines which are parallel in the real world and we can see um and they have kind of
+4:33
+a 90 degree corner over here we can see that this is definitely not the case in the image so just as an
+4:39
+example that um straight lines stay straight but power lines may not remain parallel
+4:45
+because the angle between lines can actually change another interesting thing is kind of the
+4:51
+vanishing point if we have parallel lines in our image then
+4:56
+we have a vanishing point and those lines move towards this
+5:03
+vanishing point so that means again parallel lines in the real world
+5:09
+which those tracks are at least approximately do not stay parallel in my image
+5:14
+right so those lines are are not parallel in my image plane and um
+5:20
+the uh the fact that those lines do not uh stay parallel is something
+5:27
+that we want to actually encode in this projective mapping that we want to express and these parallel lines we can describe
+5:35
+as kind of meeting at infinity so if you have parallel lines and we approach this towards infinity
+5:41
+then we have then these are two lines which are actually intersecting but the intersection point is infinitely far away
+5:46
+so you can see that if you have two lines which intersect in the euclidean world like my hands over here and i'm increasing
+5:52
+the angle decreasing the angle between those two lines the intersection point moves further and further and further away
+5:58
+and when they become parallel these points moves infinitively far away and so this is
+6:04
+something that as we will see something that we can represent really elegantly with homogeneous coordinates
+6:10
+for example and um if you have parallel lines in our image then every
+6:15
+direction leads to one vanishing point exactly one vanishing point so if you have parallel lines and we kind of
+6:23
+move the train tracks so to say or remove our camera point of view so that they're at a different location with respect to
+6:29
+my camera they will generate actually a different vanishing point in the image but every set of parallel lines has the same
+6:36
+vanishing points and so one of the questions that we have here how can we describe these points
+6:41
+which are infinitively far away in an elegant fashion and it turns out that homogeneous coordinates
+6:47
+are a very good tool for actually realizing this so the it's important to say that the
+6:54
+projective geometry that we are looking into is just a different way for representing
+7:00
+our space and it's motivated by the fact that certain things cannot be expressed that elegantly in
+7:06
+the euclidean space in the cleaning geometry and it's sub-optimal for example for this central projection
+7:12
+so what happens in the pinhole camera model and that doesn't mean we can't express
+7:17
+it in general in the euclidean space um the thing is that it becomes more complicated to write down the equations
+7:23
+and the equations don't become very handy and the method of mathematical expression become complex and
+7:31
+therefore we can go to an alternative representation these are these homogeneous coordinates which are better suited for describing
+7:37
+this so homogeneous coordinates are a system of coordinates that are often used in projective geometry
+7:44
+and they make things simpler compared to the euclidean space and there are two
+7:49
+important properties that we will express especially exploit in here the first thing is that they can
+7:55
+elegantly represent points which are infinitely far away without using infinity as a number so we
+8:01
+can use finite numbers and still represent points which are infinitely far away and that's something which becomes very
+8:07
+attractive as we will see and the second thing is it's also a very good tool and therefore it's also used
+8:12
+outside problems where projections play a role so even if you have a state estimation problem for example
+8:19
+where projections are not involved homogeneous coordinates can be
+8:24
+very elegantly and one of the reasons is that they can describe different transformations in a unified
+8:30
+fashion with matrices so a rotation can be described for example through a magnetic factor multiplication
+8:37
+that's the same for the euclidean space but it also holds for trans uh translations and that's something that
+8:42
+euclidean space for example cannot do so the last two bullet points here are the things why
+8:48
+we are using it here as an attractive tool for our state estimation problems
+8:55
+so um before we start a few words about the notation so if we have geometric objects such as
+9:02
+points lines or planes they're typically described with this capital calligraphic
+9:09
+fonts so for example x y or p typically represents a point and
+9:14
+describes the geometric object point and we can express this in different
+9:20
+coordinates either in homogeneous coordinates or in euclidean coordinates and for that we'll be using different
+9:25
+fonts so if you see this type of fonts we are talking here about homogeneous coordinates if we use this
+9:31
+type of font we are talking about something represented in the euclidean world l or m typically refers to lines
+9:37
+and a to planes and another thing which should make your life easier everything which is lowercase
+9:42
+means we are referring here to the 2d world so for example to the obligating world if
+9:47
+we move on a plane or live in a plane or if it's a capitalized character
+9:54
+then it means we are in the 3d world so just by looking to the variable on the slide you can actually
+10:00
+see if we're talking about 3d or 2d or sometimes if you're talking general i may also use lower case
+10:07
+but otherwise it means that we are living in the 2d world okay so let's start and look into
+10:13
+homogeneous coordinates what is this and what's a homogeneous object so the representation of a geometric
+10:21
+object is something that we call homogeneous and what needs to be done for this
+10:26
+is if x and lambda times x the lambda is a scalar unequal to 0
+10:33
+represent the same object that means x equals 2 times x for example or x equals 3 times x or
+10:40
+x equals 0.5 times x so this refers to the same geometric
+10:47
+object then it's something which is homogeneous so we can write this down so this equation holds we have a vector
+10:54
+this vector x is the identical vector and this is lambda and this lambda must be unequal
+11:00
+to zero so for zero it doesn't hold but for every number unequal to zero this equation holds and
+11:05
+this is clearly something that doesn't hold for the equation space so in the equilibrium space that is not the case this would only hold if lambda
+11:12
+would equal to one um but so we are more general here so those two things represent the same object okay so that's
+11:19
+the definition what's an homogeneous object is so something that is defined only up to a scale vector
+11:26
+so now let's become a little bit more concrete how does this look like for example for a point in 2d and so if you have a 2d
+11:34
+point in our 2d euclidean world point x with an x and a y coordinate over here
+11:40
+so both phase is a vector and these are the individual coordinates in regular characters so
+11:46
+then to go to euclidean coordinates we turn from an n-dimensional space to an n-plus one-dimensional space that means
+11:53
+we add one additional dimension and this is the last dimension that we add here to our vector so a 2d
+11:59
+vector turns into a 3d vector a 3d vector turns into a 4d vector a 4d vector turns into a 5d vector and
+12:07
+the last dimension in this vector is set to one so if we move from our euclidean world to our
+12:13
+homogeneous world to our projective space we add a one as a last dimension and that's basically it
+12:19
+there's nothing else that we do for representing a point or transforming a point from our euclidean world
+12:26
+into our homogeneous part and this is then from r2 into the projective space
+12:33
+p2 so it's our two-dimensional projective space okay so um that means if we say that a
+12:41
+point is homogeneous is only defined up to a scale vector that means if we take our euclidean
+12:47
+point x y turn it into a homogeneous vector x y one that means we can multiply
+12:56
+this point x with an arbitrary weight for example w w unequal to zero that means all three
+13:04
+coordinates need to be multiplied with w so w times x w times y w times 1 is w
+13:11
+so it turns into a point u y w where u equals y m w times
+13:17
+x and v equals w times y okay so and this is the same
+13:23
+thing so what we have written over here x y one is the same as u v the w this is
+13:31
+comes from the homogeneous property and then the constraint that we have
+13:39
+a point x in the 2d plane is represented by a three-dimensional
+13:46
+vector this is my u v w and the o the constraint that i
+13:51
+have is that the um the square norm of this point so u squared plus v square plus w
+13:58
+square must be unequal to zero so that means not all three coordinates can be zero
+14:05
+okay so if i have a point in the homogeneous coordinates it's not allowed that we have the point
+14:11
+zero zero zero all right and as we said that the point
+14:17
+is only defined up to a scale vector and if you want to turn this point back to the euclidean world where we need to
+14:24
+get rid of the scale vector again that means we normalize by the last coordinate that means
+14:30
+we if we have this three-dimensional vector we take the first two coordinates copy
+14:36
+it over and divide both of them by w so
+14:41
+if i want to go back to my euclidean coordinates the first coordinate gets u divided by w
+14:47
+and the second one v divided by w where again w must be unequal to zero
+14:52
+so this then turns into u divided by w which if you remember u was x times w so if x
+14:58
+times w divided by w is equal to x so i get back my original point in my
+15:05
+euclidean world and even if i'm in the homogeneous world scaled it with an arbitrary factor
+15:11
+through this division by the last coordinate i'm taking this scale factor out again
+15:16
+returning back to our euclidean world
+15:21
+so just as a thought experiment what would actually happen if my term w my weight my last
+15:28
+dimension would be zero just assume it's zero if it is zero that would mean if you
+15:35
+turn it back into a euclidean point so something that we can actually better visualize in our
+15:41
+brains because we're used to that that would mean we would take a value u and v and would divide it by zero
+15:49
+and that would mean those points would take arbitrarily large values for x and y or
+15:55
+let's say y would be zero then only the x coordinate for example would be infinitively large
+16:00
+so it leads to values which are infinitely large as the coordinates of the points and
+16:05
+that means this is a point which is infinitely far away okay so if the last coordinates
+16:13
+is zero that means we have a point which is infinitely far away and this can in the euclidean world only
+16:18
+be expressed through an infinitively large number so infinity basically is the x
+16:23
+y or x and y coordinate and this is equivalent to a point that
+16:30
+is has a weight of zero so um just an example the projective
+16:36
+plane these are kind of all the points um in p2 they contain all points that we
+16:44
+can that we know from our euclidean world um so if the point isn't as an arbitrary
+16:50
+point x y um we add the point x y one so there's an element of this um projective plane so all the points in
+16:57
+the from the euclidean world sit in this plane what we don't have in that plane however
+17:03
+and what additionally sorry what we additionally have in that plane are all points which take a zero in the end so a point that i cannot generate
+17:10
+directly out of an euclidean coordinate because if i come from the euclidean
+17:16
+coordinate i have this weight vector of one over here and these are the points which are infinitively far away
+17:22
+so if the last coordinate is zero then it's a point which is infinitely far away in the first two coordinates here
+17:28
+just basically specify the direction where that point is in the world and the only point which is not part of
+17:34
+that projective plane is the point zero zero zero this is explicitly taken out so the zero vector
+17:42
+where all dimensions are zero is not part of p2
+17:47
+so if you want to go from homogeneous coordinates back to the euclidean coordinates we can write this as u v w so my
+17:55
+arbitrary vector only w arbitrary vector so this is equivalent to
+18:00
+u divided by w v divided by w so i'm taking these two coordinates divided by the last coordinates so that this is
+18:07
+turns into one and then i'm basically dropping the last coordinate because if this is one i can go from homogeneous coordinates to euclidean
+18:13
+coordinates by dropping the last dimension and then this is equal to my point x and y
+18:19
+so let's try to visualize this fact again so what you see here is a three-dimensional space and
+18:25
+this is the three coordinates that we have in our euclidean world um what you can see in here is there's a
+18:33
+plane with where the z coordinate equals to one this is this gray plane over here
+18:38
+and if the z coordinate or the that's called the third coordinate not the z coordinate but the third coordinate
+18:44
+equals to one that means um the other two coordinates represent the point in the euclidean space
+18:50
+and so this grey plane here represents the euclidean space the euclidean to the euclidean space we
+18:57
+however have a vector with three values the first two values sitting here and the
+19:02
+third value is one then we're in this gray plane but we can also be outside this grey
+19:07
+plane right so we can be anywhere in this
+19:12
+three value three-dimensional space and um so any point that has
+19:20
+where i for example multiply the the x y coordinate was let's say 2 i get
+19:26
+2 times x 2 times y and the third coordinate would be 2 would be a point which is sitting higher
+19:32
+up here so on third coordinate equals to 2. and
+19:37
+every point which lies on that line towards zero zero zero represents
+19:43
+the same point in the euclidean world so we can see that all points which lie
+19:49
+on that line on that black line in this euclidean coordinate euclidean space
+19:54
+represent this single same point in my euclidean world okay
+20:01
+and only this plane down here these are the points which are
+20:08
+infinitively far away and which then cannot be represented with with the euclidean coordinate
+20:16
+or in the euclidean space because this is this plane which sits up here okay what we can do
+20:22
+in 2d we can also do in the same way in 3d so the analogous thing to 3d from 2d to
+20:29
+3d is we have a three-dimensional vector and we turn into a four-dimensional vector right we add this one dimension and add one to it
+20:36
+exactly the same thing and also the way back is very similar that we take all the coordinates that we
+20:41
+have in this case three and not two and divide it by the last in this case
+20:47
+fourth coordinate so if you have u v w t and t is now a last dimension that means if you want to go back from
+20:53
+homogeneous coordinates into euclidean coordinates we first divide the vector
+20:59
+by t so it's we're still in euclidean space where you can u divided by t v divided by t w divided by
+21:05
+t and this turns into one and as soon as i have a one sitting over here i can drop this dimension
+21:11
+and then it brings me back to the euclidean space okay so we what we can do in 2d we can
+21:18
+do exactly the same way in our 3d world representing a point in the in p3
+21:25
+from r3 to p3 in this example and then the origin of the euclidean
+21:31
+coordinate system this may be said because this mainly to some confusion is the point zero zero and the last
+21:39
+coordinate is one or zero zero zero one so this is the origin in the euclidean world
+21:44
+remember the point 0 0 is the origin in r2 and this is the
+21:51
+plane r2 so it's exactly this point over here so that means the origin of the
+21:56
+euclidean coordinate system in homogeneous coordinates is the zero vector where the last dimension is still one
+22:03
+it's not zero zero zero this would not be part of that space so it's kind of the important thing that
+22:08
+you need to keep in mind the origin is 0 0 1 or 0 0 0 1 in the um
+22:18
+in the expression homogeneous coordinates so the next thing i want to look into
+22:24
+are transformations this is one thing which can which is the reason why
+22:29
+homogeneous coordinates are so frequently used because because you can write down change of transformations in a very very easy way
+22:37
+and so the transformation can be expressed through a matrix vector multiplication
+22:43
+so again x is my an arbitrary homogeneous object and
+22:50
+those examples here will be done in 2d or in 3d now and i can perform a projective
+22:57
+transformation by multiplying a matrix h in this example to
+23:02
+and then the vector from the right hand side to this matrix h and we're talking here about an
+23:08
+invertible mapping so projective transformation is invertible mapping of that form that takes a point x
+23:14
+you multiply h times x and it gives me a new point x prime and let's have a look how this
+23:20
+matrix h actually looks like and try to make the connections between the
+23:26
+euclidean space so what is a translation in the euclidean space in the three
+23:32
+euclidean space for example and would be a translation by x y and that so i'm going to shift in x shift and y and shift in that coordinate
+23:40
+can be expressed by a matrix h again the matrix h is a homogeneous object so it can be multiplied with any arbitrary
+23:47
+scalar scalar factor this was our homogeneous property and then i have this matrix h is
+23:54
+a four by four matrix because we're representing the 3d euclidean world and this identity over here is a three
+24:02
+by three identity matrix so this matrix over here a three by three matrix with one on the main diagonal and zero
+24:08
+everywhere else this is a three-dimensional vector zero so zero zero zero this is a
+24:14
+scalar one and this is a vector t a three dimensional translation vector and this vector t represents the shift
+24:20
+in the x y and that coordinate in our euclidean world so if i use
+24:25
+this matrix over here so it's a matrix which has basically is basically a
+24:33
+four by four identity matrix so it's one of the main diagonals except that
+24:38
+these the last three values over here contain the translation vector t x t y
+24:44
+t z and if i then multiply a point from the left hand side to this matrix h
+24:50
+it's equivalent to shifting the point translating the point in our three dimensional world
+24:59
+this is an elegant thing because that's something that i cannot express in euclidian coordinates
+25:05
+through a vector a matrix vector multiplication i only can do this by adding a vector to it
+25:12
+and if we can express all the transformations as matrix vector multiplications
+25:18
+this becomes very elegantly because they can simply chain those by multiplying those matrices together
+25:24
+for example okay so but this was only a translation let's see how that looks like for more complex transformations what about
+25:30
+a rigid body transformation rigid body transformation is a transformation which has
+25:36
+three more parameters um so rotation and a translation so let's look to the translation maybe
+25:42
+first how can we express rotation in this euclidean space it
+25:47
+turns out i take the same h matrix and this identity matrix over here i put
+25:53
+in a regular rotation matrix as you know them from our euclidean world and
+26:00
+of course if i only want to rotate something there's no translation involved so this this three-dimensional vector must be
+26:06
+the zero vector because there's no translation involved so basically have a matrix which has um
+26:12
+the last column and last row are zero except the last element last last element down here which is one
+26:19
+and over here i have a three by three space which is left which is filled with a regular rotation matrix
+26:26
+just as a reminder rotation matrix is something we discussed in the previous lecture
+26:31
+this is how the standard rotational matrix looks like in a two-dimensional space and how different rotation matrix around the
+26:36
+x y and that coordinate look in the in the three-dimensional space and we can just multiply for example
+26:43
+three rotational matrices together or even more than that and obtain an arbitrary rotation in the
+26:48
+3d world and this is the rotation matrix which sits there in in this rotation
+26:54
+here so this r is exactly this rotation matrix and this allows us to express a rotation
+26:59
+of rotating a point in homogeneous coordinates through this transformation into a new point
+27:04
+and if we turn that back into the leading coordinates we get exactly what we would get if it would execute
+27:10
+rotation in the euclidean space as well so other important transformations are
+27:18
+rigid body transformations so rigid body transformation consists of a rotation and a translation
+27:24
+and it's then six parameters three for the translation part and three for the
+27:30
+rotation part and this is now expressed in that way so it contains of basically
+27:35
+the rotation transformation and the translation transformation i have my r sitting over here my
+27:40
+rotation matrix my translation over here a zero vector and a one and everything is only defined again up to this magic
+27:47
+scalar factor and this is if i multiply now a point with this transformation h it basically
+27:54
+executes a rigid body transformation consisting of a rotation and a shift and a
+28:00
+translation and this is exactly what it has so if you multiply a point here from the left hand side the point will be rotated by the
+28:06
+rotation matrix r and translated by the vector t
+28:12
+okay now let's look into other transformations they're more than just translation rotation and rigid body
+28:18
+transformation so there's for example the similarity transform which is a very frequently used transformation
+28:24
+in computer vision or in photogrammetry this basically adds an additional parameter is scale factor
+28:30
+and this is a scale factor which scales the points down so and here we cannot just add in the
+28:36
+euclidean space multiply multiply the whole transformation with a scalar because this is the homogeneous property that
+28:42
+wouldn't change the object itself so we only need to multiply the this rotation matrix here
+28:48
+with a scalar so we are basically not scaling this um the the one down here
+28:56
+and as a result of this it will just make our objects larger or smaller so this small m is the scaling factor
+29:03
+that we um know how we would scale in our euclidean space so this is again still an angle preserving mapping
+29:11
+because we are just rotating something we are shifting something and we're making things larger or smaller in the same way in all dimensions so all
+29:18
+angles stay the same under this similarity transformation if you now go to an affine
+29:24
+transformation which has additionally three shear parameters involved and maybe even
+29:29
+scale parameters in x y and that differently then we end up having 12
+29:35
+parameters so three translations three rotations three scale parameters and three shear parameters
+29:42
+and then we still have this zeros down here our translation vector here our one
+29:49
+sitting down here but this matrix which was a scaled rotation matrix before turns into an arbitrary matrix because
+29:56
+we have three degrees of freedom sitting in here so we have nine degrees of freedom sitting in here so three from rotation
+30:04
+three from scale and three from shear so this non-arbitrary matrix a which is nine elements and nine
+30:10
+degrees of freedom and this we can use to express an affine transformation
+30:15
+so um in fine transformation means that parallel lines still remain parallel
+30:20
+but it's not an angle preserving mapping so angles between lines for example in this world
+30:28
+will change and then we can go even further to a projective mapping and
+30:33
+the only three parameters we still have actually sits down here so what happens if we have this add the
+30:40
+three degrees of freedom in here if we add the additional three parameters here
+30:46
+into a vector this turns then into a projective transformation and this projective transformation has
+30:51
+15 degrees of freedom again this is a 4x4 matrix so it means 16 values but this one
+30:58
+is one so we have 50 degrees of freedom and these are the reasons why parallel
+31:05
+lines may not stay parallel so if you have a projective transformation
+31:10
+which is goes beyond or extends the defined transformation we get three additional values over here
+31:16
+and as a result of this parallel lines may not stay parallel okay so what we
+31:21
+have seen now is that we can express projective transformations of fine transformations
+31:27
+similarity transformations rigid body transformations rotations and translations and scaling very elegantly through the
+31:34
+same object through a four by four matrix for the three-dimensional space and this
+31:42
+allows us to chain those matrix simply by matrix multiplications next to each other um just for
+31:48
+illustration purposes what this slide shows shows a different transformation for 2d that we can do
+31:54
+from transformation mirroring axis rotation motion similarity transform scale differences
+31:59
+and so on and so forth until the projectivity and you see the degrees of freedom and how these matrices actually looks like
+32:05
+so which parameters are fixed which type of value and what i've discussed here are basically
+32:10
+those the representation of this matrix h this is what we have done for 3d now and here's a nice overflow overview for
+32:17
+2d so in sum we have this hierarchy of transformation the most general one is this projective transformation
+32:23
+where parallel lines may not stay parallel anymore due to the projection the fine transformations which is not
+32:29
+angle preserving so angles may change but parallel lines stay parallel the similarity transform which is an
+32:36
+angle preserving mapping so angles stay the same just the size of the object may change
+32:41
+the rigid body transformation doesn't scale the object it keeps its size and this can be then split up
+32:46
+into a translation and rotation and you also see the number of free parameters for 2d
+32:52
+and 3d in this plot by expressing those transformations as matrices as i
+32:58
+said before we can very easily chain those transformations something we see down
+33:04
+here so if we have two transformations h1 and h2 and we
+33:09
+want to execute h2 and then h1 we can express this by h1 times h2
+33:14
+times x and so x is first transformed through h2 and then transformed through
+33:21
+h1 and then gives me my point h prime i could also multiply those two matrices together because they're just four by
+33:27
+four matrices so i can multiply them with each other we'll get a new four by four matrix which expresses the combinations uh the
+33:35
+chaining of these two transformations but as a note this is not a cumulative
+33:41
+operation so executing h1 and then h2 is different from executing h2 and then h1
+33:47
+you may remember this from the rotations um through this because in general matrix
+33:52
+multiplication is not commutative so that's something that you also have to take into account here
+33:57
+but the other thing which is also elegant that i can easily invert a transformation and inverting a transformation can be
+34:04
+obtained by just inverting my matrix h so if i have a point x which is transformed through
+34:10
+h into x prime what i can do is i can take this matrix h compute its inverse multiply h prime
+34:17
+from its um from its right hand side and then we'll actually obtain the original point
+34:22
+x so i can use these transformations as matrices as i'm used to be
+34:28
+i can chain them multiply them i can invert them to invert the transformation and that is something that i can also do
+34:34
+in this um homogeneous coordinates and which allows me to very elegantly combine and invert different
+34:41
+transformations with which points are executed in the real world and this is important if you for example like
+34:47
+you have a camera which is moving through the environment you want to describe the motion of the camera with translations with rotations or a
+34:54
+mobile robot for example or you have a scene and you want to shift and rotate the scene and
+34:59
+scale the scene then it's a similarity transform or you have points in the 3d board which are projected
+35:05
+onto a camera image then all these things these transformations are very very useful and therefore
+35:11
+they're such a frequently used tool in photogrammetry so to go
+35:16
+a step further what else can we do or what is also important in here and what i want to dive a little bit
+35:22
+further is into other geometric objects especially looking into lines we can also see how we can represent those
+35:28
+lines in homogeneous coordinates and that we can do attractive manipulations with those homogeneous
+35:35
+representations of the lines that allows us to do certain operations like checking if a point lies on a line
+35:41
+or if the computing intersection between two lines in a very easy and elegant way let's
+35:47
+have a look how we can actually represent lines in homogeneous coordinates
+35:54
+so we can have different ways for representing lines how we do this in the euclidean world depending where
+35:59
+you went to school you have seen different ways for doing this the first prominent example is so-called
+36:05
+has a normal form there we have an angle which represents the direction
+36:10
+of the line and a distance d from the origin and we can express
+36:15
+this line with the equation x times cosine of the orientation of the line
+36:21
+plus y times the sine of the orientation of the line minus the distance d to the origin
+36:26
+should be equal to zero or you can go for this intercept form which is shown here or
+36:31
+most prominently the standard form ax plus b y plus c equals to zero and this is
+36:38
+all called the implicit form in german or the standard form which is a common way for describing a line through this form
+36:44
+of equation okay so what we can see in here is that we typically have three parameters
+36:50
+to represent a line this can be the three coefficient of the standard form or two quantities that depends on
+36:57
+the angle of the line and one that depends on the distance of the line to the origin
+37:02
+and now we can take those three values and arrange them in form of a vector
+37:09
+and before we do this we want to kind of rewrite those equations a little bit so that all kind
+37:16
+of have the same form so we are rearranging these three forms such that we always have
+37:22
+an equation where the first parameter is a coefficient times x the second term
+37:28
+is another coefficient times y and then we have a constant and
+37:34
+equals to zero so it's a very easy way if we can trivially rewrite has a form intercept
+37:39
+form and standard form so that they fulfill this equation as you can see it here on the right hand side of that slide
+37:47
+so if we have that we can always see that we have coefficients that sit in front of x coefficient that
+37:53
+sits in front of y and a constant part and then equals to 0. so we now want to do is we can take
+38:00
+these coefficients and arrange the coefficients in form of lines so these are always
+38:07
+equations that are equal to zero and we take out the coefficients of these equations and put them in a vector form
+38:14
+and this is then our representation of a line in homogeneous coordinates so again we can do it in three different
+38:20
+ways if we take the standard form it would be a vector with the coefficients a b and c if you
+38:25
+prefer the hassel form this would be the cosine of the orientation of the line the sine of the orientation of the line
+38:32
+and the negative distance to the to the origin or the corresponding elements in the
+38:38
+intercept form and if we then have a point and want to see if a point
+38:45
+lies on a line so if a point fulfills the equation we basically need to check if a times
+38:52
+x plus b times y plus c equals to zero right because this is the
+38:58
+equation but a point that lies on line must fulfill so we can do is we can take one of those
+39:03
+three forms over here it doesn't matter which one and multiply it with a point
+39:08
+x y one and if this equals to zero then we know this point lies on the line
+39:15
+so that is actually very conveniently written as x multiplied with
+39:21
+the line equation must equal to zero so through the dot product we can express the fact if or the test
+39:29
+if a point lies on a line so if we multiply a line given with all
+39:34
+three parameters with a point x y one and the result is zero it means the point lies on that
+39:40
+line because that means that it fulfills the line equation so just by using dot
+39:46
+product we can very elegantly check if a point lies on a line so
+39:54
+more formally we can define a line um in homogeneous coordinates in 2d as a vector containing of three
+40:01
+elements l1 l2 and l3 and the important thing is that not all
+40:07
+quantities can be zero so at least one of those quantities must be unequal to zero and then
+40:14
+this three-dimensional vector represents a line that corresponds to a line in the
+40:19
+euclidean world that fulfills this equation which is shown down here so it's basically the standard form
+40:26
+where the three dimensions of the line vector are the coefficients of the standard
+40:33
+equation used for a line okay so it's a the only thing we do we
+40:38
+basically take the three parameters that the line has and arrange it in vector form and not all quantities are allowed to be
+40:45
+zero and then if you want to test if a point x lies on line l
+40:50
+the only thing we need to do we need to compute the dot product x times l and must check if it's
+40:57
+zero yes or no if it's zero the point lies on the line if it is unequal to zero the point does
+41:02
+not lie on the line so it's a very easy to execute test that we can do
+41:09
+okay we can go further and see what happens if you actually want to compute the intersection of two lines so given
+41:14
+that we don't have a point in the line but two lines and we want to compute the intersection of those two lines
+41:20
+can we do this in an efficient manner and we it will turn out we can actually do this in homogeneous
+41:26
+coordinates in an efficient way so what needs to be done so that we can compute the
+41:32
+intersection of two lines so again that means we want to find a point x which lies on both lines because then
+41:39
+this is the intersection of the two lines that means we can if we have a line l and line m
+41:45
+we can set up two equations saying first x times l must be zero and x times m must
+41:51
+be zero these are two equations that need to be fulfilled and so that's something we can very
+41:56
+easily arrange in a system of two linear equations with
+42:02
+two unknowns so l times x must be zero and m times x must be zero and we can arrange it in this form and
+42:09
+we can if we kind of expect if we expand this expression we can also express it in the following way but moving the
+42:16
+constant part here to the right hand side of this equation then we have a two by two matrix multiplied with a two dimensional vector
+42:22
+and um our equals another vector and this is kind of the standard way for representing a
+42:28
+system of linear equation here with two unknowns and two equations so how do we solve
+42:35
+this we take and take an arbitrary technique that we have in order to solve this one of the easiest way to do this
+42:41
+here for this by two system is to use um kramer's rule so as a short reminder
+42:47
+if you wanna solve a linear system ax equals to b you can compute this by
+42:54
+the different solution dimensions of x are so x1 is the determinant of the
+43:00
+matrix a where we replace the first column of a with the vector b divided by the
+43:07
+determinant of a and if you want to compute the second dimension of x this would be then taking
+43:12
+the matrix a and replacing the second column of this matrix a by the vector b
+43:17
+and the only thing i need to do i need to compute these two determinants and divide them through each other and this gives me the result
+43:23
+for x and this is especially something which can be very easily done in 2d because in 2d the determinant can be very easily
+43:30
+directly computed without needing to do a lot of complex instructions so
+43:36
+let's go through that step by step i want to compute the solution of that system that is shown here which is the system i need to solve in
+43:43
+order to find the point at which two lines l and m intersect so by just the um straightforward
+43:50
+application of chromos rule i know that the x coordinate of the intersection point is d1 divided
+43:55
+divided by d3 and for the y coordinate d2 divided by d3 where d1 d2 and d3 are the three
+44:03
+determinants one for this the first one the matrix a where the first column is replaced d2
+44:08
+the matrix a with the second column is replaced and d3 is the original determinant of the matr or the determinant of the original matrix a
+44:15
+okay and these are the ways we can compute the determinant again if you want to compute the determinant of this
+44:20
+matrix for example it's l1 times m2 minus m1
+44:26
+times l2 and if you expand this you get exactly those expressions down here okay so
+44:34
+this is my result and now what i'm doing i'm just taking this fact of this result over here and
+44:40
+i'm just slightly rearranging this so this is a copy paste the solution of chroma's rule and then i
+44:46
+can rewrite this in homogeneous coordinates by saying my solution x is a vector x y one which
+44:53
+is the intersection in euclidean coordinates and this is nothing else just from the result of grammar's rule as d1 divided by d3 d2
+45:00
+divided by d3 and now i can say i can write this in homogeneous coordinates as d1 d2 d3 as a vector with three
+45:09
+components and if i would take this vector and go back to the euclidean world you know i have to divide by the last
+45:15
+component so i exactly get this result and then i have my point in
+45:20
+my euclidean world so this means i can obtain the solution by writing it in
+45:27
+homogeneous coordinates as a vector d1 d2 d3 where these are the three different determinants computed
+45:33
+based on chromosomal okay if you now carefully look to this vector
+45:39
+d1 d2 d3 with those elements in here
+45:44
+this is actually the result that you obtain if you compute the cross product of two
+45:50
+vectors in 3d so the result that we have for this system
+45:58
+can be expressed by this vector x exactly in the way we did it we did it before and i can actually take
+46:04
+out this d3 um just to see the correspondences to the um euclidean world and then this is nothing
+46:10
+else than l cross product m so by computing the cross product of two lines i actually obtain the point
+46:18
+the intersection point of those two lines that's an interesting thing it's just kind of lets you write down the intersection of two lines
+46:26
+in a very elegant way just by l cross x and um so you can if you
+46:32
+have a mathematical equation where you need to compute the intersection of two lines and then continue working with these two lines
+46:38
+you can write it down in this very elegant way so it makes the mathematical opera notation much much more compact and
+46:46
+is very elegant if you write things down in homogeneous coordinates so just to summarize this we said we the
+46:54
+test if a point lies on the line with the dot product of the point in the line it must be zero and if we compute want to compute the
+47:01
+detection of two lines um we obtain the point x as the intersecting points of l and m just by computing l cross m so it's a
+47:09
+very simple and elegant way for computing the intersection of two lines
+47:15
+using homogeneous coordinates so then we have one operation more which we commonly use we have two points and
+47:20
+we actually want to fit a line through those two points or compute the line parameter that that
+47:26
+generates a line that goes exactly to those two points and this is again something we can do in
+47:31
+a very an elegant way so also homogeneous coordinates also provide us with a simple way for
+47:38
+computing the line that goes to two points so now consider we have two points a point x and a point y
+47:44
+so x i are the three parameters homogeneous coordinates of the point x
+47:51
+and y the corresponding one and our line l has the parameters l1 l2 on l3
+47:57
+another question is how can we find the line that connects those two points so how to determine l so that l
+48:03
+passes through the points x and y and we can formulate this again in a
+48:09
+very in a very similar way by saying the point x must lie on l
+48:15
+and the point y must lie on l so i can again write l dot x must be zero
+48:22
+and l dot y must be zero so two things um i exploit that the both points must
+48:28
+lie on the resulting line that i want to compute so it's basically it turns out into a system which is more or less the
+48:34
+same to what we had before when we computed the intersection of two
+48:40
+of two lines except that now we want to obtain the point we obtain the line given two points and
+48:47
+before we want to obtain the point given that we had two lines but in the end both are three dimensional vectors
+48:54
+nothing else than that so it turns out that i can do more or less the same steps than i did before
+48:59
+and compute solve this linear system using grammar's rule and then come up with
+49:06
+my result the only difference was before these were here just kind of one parameters and no two
+49:12
+parameters involved so this requires a very minor modification but the result in the end will be the same so we
+49:19
+can use again use grammar's rule to to solve this linear system over here and again
+49:26
+the as it was done before the first and second solution of the line parameter is given by d1
+49:34
+divided by d3 and d2 divided by d3 and then written down exactly the same way so it's directly
+49:40
+the application of um of chroma's rule as we used it five minutes ago
+49:46
+for computing the um point that intersects two lines
+49:51
+okay so then i can i forget again my vector d1 d2 d3 i have my parameters l1
+49:57
+and l2 and now i can use the define
+50:02
+a third line parameter which is my l3 and then i can say this is l3 equals l3
+50:11
+times d3 divided by d3 and then i can i use this for a small trick because
+50:16
+then i can write my line equation in this form d1 divided by d3 d2 divided by d3
+50:22
+d3 divided by d3 times l3 so i can move l3 divided by d2
+50:29
+out of that equation and i do this in order to simplify these terms d1 and
+50:35
+d2 here so that they turn into the result that corresponds to the first two dimensions of the
+50:41
+of the cross product so this is just kind of moving an expression out of the um out of the of the vector so that this
+50:49
+turns into a cross product and as we have a homogeneous object as
+50:54
+long as this expression is unequal to zero and this is the case because otherwise
+51:00
+the determinant of our system would be zero and this is not the case this expression is unequal to zero
+51:07
+and so this is just the constant scaling factor that we know from homogeneous
+51:12
+coordinates so we can simply drop this vector over here because we are having homogeneous object it's still
+51:18
+identically the same and as a result of this this expression equals this expression
+51:24
+because i can drop this scaling factor so my line parameters l
+51:30
+turns into nothing else than x cross y so in order to compute the
+51:36
+line that go through two points i just need to compute the cross product of the two points
+51:42
+so x cross y gives me the line so to summarize the
+51:48
+three properties that we have derived now to check if a point lies on a line we just have to compute the dot product
+51:55
+of the point in the line or the line the point because of course this commutative the first operation
+52:00
+and for computing the intersection of two lines the intersecting point is the cross
+52:06
+product by the two lines or the fitting computing a line that passes through the two points x and y
+52:13
+is again computed by the cross product so very simple operations that we can use later on if we have
+52:19
+lines in our image and we want to do operations with those lines um having a line putting through the
+52:25
+points intersection with something else there these mathematical expressions become
+52:30
+very handy because they simply allow us to write things in a very compact way and therefore that's something that we
+52:36
+will also use later on in your studies or you will have to use in your studies
+52:42
+when we operate with images and lines and images the last point i want to look into are points and lines
+52:49
+in infinity so i said before in the lecture that one of the elegant things of homogeneous
+52:54
+coordinates is that we can express geometric objects which are infinitely far away
+53:00
+like a point at infinity and we can actually do something similar as lines and what i want to do now in the next
+53:05
+minutes elaborate that a bit further and dive into the details of what means to have a point
+53:11
+or lines at infinity so we have seen before that the last component of this
+53:17
+homogeneous vector is important and if it is zero the last dimension so like in this
+53:25
+case over here this is an element which cannot be represented in euclidean coordinates at least with
+53:33
+finite values for the other dimensions so this was kind of the kind of the the
+53:39
+the the z equals to zero plane in this visualization that i had before the third component it's not actually
+53:45
+the z component but the third component and this was kind of a plane which was parallel to the euclidean
+53:51
+r2 plane in this illustration and these were the points which lie infinitively far away
+53:58
+so what we have if we have a point which is infinitely far away we sometimes want to make it explicit we write this infinity down here
+54:05
+which means nothing else that the last component is zero and my the other two components are still here and these are finite
+54:11
+coordinates so remember the important thing is we have a vector which only contains of
+54:17
+finite numbers but it represents a point which is infinitely far away and the interesting
+54:22
+thing or the important thing that we have in here is that we maintain the direction where that point is
+54:27
+and those first two parameters indicate that the direction of that
+54:34
+point you can see this if you think about the form because the first two parameters from the hesse
+54:40
+form was the cosine and sine of the of the orientation of the line so it
+54:46
+tells me in which direction i'm actually looking to and the last point was just um the
+54:52
+related to the distance to the origin so this is a great tool when you work for
+54:59
+example with cameras you know if you have a camera and you make a picture of an object
+55:04
+you do not know how far that object is away you just know the direction of the object so you know which pixel
+55:10
+in which pixel coordinate the object lies to but you have no idea how far that is away the point lies somewhere on the line or the
+55:15
+object lies somewhere on the ray of light but can be infinitively far away
+55:21
+and that's a homogeneous coordinates are especially a great tool if you work with cameras to represent
+55:27
+those facts at points can be infinite infinitely far away but we still know the direction we can
+55:32
+express a direction with finite coordinates so if you consider you have a point which is this
+55:38
+is infinitely far away so wherever you are you observe this point in the same direction that's a very great tool in order to
+55:47
+determine your orientation so where you're looking to because if you know that in a certain direction you always see
+55:53
+the same object like the north star the north star is always in the same direction there's north no matter where you exactly are there's
+55:59
+a great tool for fixing the orientation of a camera or robot moving through the environment
+56:05
+and the nice thing is you can explicitly express this with homogeneous coordinates so let's have a
+56:12
+look to all the lines which actually go to a point which is infinitely far away the next thing that i want to look into
+56:19
+kind of check which lines actually intersect at that point which is infinitely far away
+56:26
+in order to do this we can use the tools that we just derived by having checking if a point lies on a
+56:32
+line so we say we are interested in all lines l that intersect with this point x infinity again x
+56:39
+infinity was u v zero okay so uv zero
+56:45
+and i'm interested in the line or in the in all the lines which intersect with this points so the
+56:51
+point which is infinitely far away the questions know which lines intersect actually at that point which is
+56:56
+infinitely far away okay so if you now interpret the lines
+57:02
+in hesoform we have seen that the first two parameters of those lines tell me the orientation to the line so
+57:08
+what's the heading in line what's the direction where is this line going to um
+57:13
+and what this equation actually tells me given that i know that the last coordinate of this vector
+57:20
+of this point x infinity is zero the third parameter of this line doesn't really
+57:26
+matter because we all enemy with that to zero so the only parameters in l which i need to
+57:33
+fix in order to make them the lines intersect with that point are the first two coordinates and these
+57:39
+are exactly the cosine and the sine so that means that u
+57:46
+times cosine of the orientation of the line plus v times the sine of the rotation of the
+57:52
+line must be zero and this is a constraint that i have the third component of the
+57:57
+line doesn't matter okay so that means that
+58:04
+for all the lines which have the form the first two dimensions are
+58:10
+fixed through the orientation of the line and the third one is communicated with the stars kind of the free parameter
+58:15
+i don't care how far the point the line is away from the origin all those points
+58:23
+will pass through x infinity and this equation over here
+58:30
+fixing the first two coordinates but leaving the last coordinate open or basically all the lines which look
+58:37
+into the same direction so these are parallel lines so that means all lines which are parallel
+58:45
+will intersect at the same point in infinity so all parallel lines meet at one single
+58:52
+point at infinity and that's kind of an important thing um that we that we can exploit and take
+59:00
+into account that if we have parallel lines those parallel lines will intersect in one single point which is infinitely
+59:07
+far away from us we can also see this in a different way
+59:12
+if we look in to exploit the fact that we want to compute the intersection of two lines so let's let's design
+59:18
+two lines and compute the intersection
+59:24
+of the two lines there's something that we can do with a cross product as we have seen just a couple of minutes ago so what we
+59:30
+can do is we can say okay we have a line a b c and we have a second line a
+59:36
+b d so again these the first two dimensions are identical but the last two dimensions are can be
+59:42
+different so these are two lines which are parallel i don't specify the direction in which they go
+59:48
+to because i don't tell you how a and b looks like but i can tell you that they are the same so
+59:53
+the lines must be parallel so it's an arbitrary two arbitrary but parallel lines if i compute the cross product between
+1:00:01
+the two elements over here um then the important thing is that we can see is that the
+1:00:06
+third dimension here is a b minus a b because it results from
+1:00:13
+having these two operations combining these two dimensions so this means whatever i do
+1:00:19
+the last component is zero that means the point is infinitely far away and
+1:00:26
+the first two dimensions of this of this point only depend on the or depend
+1:00:33
+on the line parameters okay so if i have two parallel lines which i expressed over here
+1:00:39
+they meet at a point at infinity and the line parameters which i have in
+1:00:45
+here tell me uh which point that actually is so all parallel lines meet at one point
+1:00:52
+at infinity and kind of a nice illustration here the two lines and they meet at infinity just kind of as an
+1:00:59
+illustration or a reminder for yourself for that effect so those images always help you
+1:01:04
+to remind those things in a nice way so we can then look into infinitively
+1:01:12
+distant objects so we set um an infinite point is a point
+1:01:19
+u v 0 that is kind of the point which is infinitely far away we can also
+1:01:26
+look into an infinitely distant line which is called the ideal line and the ideal line
+1:01:32
+has the parameters 0 0 1 over here and as we'll see in a second
+1:01:39
+this line l infinity can be represented as kind of as a horizon line because it is a line where all which con
+1:01:47
+which contains all points which are infinitely far away so a line at infinity is a line that
+1:01:52
+passes through all the points which are infinitely far away you can have a line that passes through one
+1:01:58
+point which is infinitely far away and maybe your camera or the projection
+1:02:03
+center of your camera i'm not talking about this line over here i'm talking about the line that path through all points which are infinitely
+1:02:10
+far away and this is this line how can we test that we take all points which are
+1:02:16
+infinitively far away which are represented in this way and compute the dot product with this line which connects all the
+1:02:23
+points which are infinitely far away because all those points must lie on the line so the product of x infinity and l
+1:02:29
+infinity must be zero so if i compute the product of x infinity and l infinity it turns out
+1:02:35
+that the first two component as x infinity can take arbitrary values over here
+1:02:41
+must be zero for that line and as this value is zero for x infinity
+1:02:46
+this must be a non-zero value for the line okay and we can just write a one in here because it's only defined up to a
+1:02:52
+scaling vector so this must be zero that means nothing
+1:02:58
+else that this is a line the ideal line which connects all points which are infinitely
+1:03:04
+far away and kind of you can visualize this kind of the horizon line it's basically the whole horizon which spans infinitely
+1:03:11
+far away and that connects all points that are infinitely far away from you
+1:03:16
+so we can explicitly represent the line containing all the points which are infinitively far away from us
+1:03:23
+so this is something that we have done in 2d so far we can do things in a similar way in 3d
+1:03:29
+so if we have a point in 3d again we have just a four-dimensional vector to express the
+1:03:37
+three-dimensional point in homogeneous coordinates and we can do a very similar thing for a plane
+1:03:42
+and say a plane has simply is it can be expressed as an equation
+1:03:47
+that equals to zero um with four coefficients rather than three coefficients because now i have not only
+1:03:53
+the x and y coordinate of x y z and my constant so i have one parameter more
+1:03:58
+for representing my line so and i can do very similar thing to check if a point
+1:04:04
+lies on a plane in 3d now again using the dot product so a dot x
+1:04:09
+where a is a plane equation and x is the point must be 0 which can be expressed as a transposed x or
+1:04:16
+x transposed a must be 0. and though this is done in a very similar
+1:04:22
+way that i can use the standard equation of the line saying a b c d other line equations are the
+1:04:28
+coefficients of my sorry not line plane equation so a b c and d are the coefficients of the
+1:04:35
+plane not line equation or i can express this also with the
+1:04:40
+a product of the normal vector um and then the the constant factor that kind of two
+1:04:46
+different ways how can i can actually represent this and then i can also have in a very similar vein points which are
+1:04:51
+infinitively far away in 3d which are points where the first three parameters are take
+1:04:57
+arbitrary values and the last parameter is zero and again these are points in infinity but now in
+1:05:04
+3d not in 2d but again the first three dimensions are
+1:05:10
+finite and they determine the direction of that point just in 3d we have one dimension more
+1:05:16
+in a very similar way i can define this plane which goes through all points which are infinitively far away
+1:05:22
+and you can basically envision this at the sky so it's kind of all points which are infinitely far away
+1:05:28
+lie on this special plane and this is the plane with the parameters 0 0 0 and then a constant value
+1:05:36
+which is only defined up to a scaling factor so we can do very similar things but i've showed in 2d
+1:05:42
+also in 3d and can exploit similar effects in here so this brings
+1:05:48
+me towards the end of the lecture today which was a kind of introduction to the key things or key aspects of homogeneous
+1:05:56
+coordinates that we will use here in the lecture so there are a lot more things that you can do in homogeneous coordinates it can also
+1:06:02
+get substantially more complicated especially also if you take into uncertainties into account and things
+1:06:07
+like this it's not always trivial but homogeneous coordinates are a very very useful tool
+1:06:13
+and the important thing to note it's just an alternative representation for geometric objects and an alternative
+1:06:20
+to the euclidean representation that you are used to why are we using this because it allows
+1:06:26
+us to do certain things in a more elegant way so certain mathematical operations can be expressed easier if we operate in
+1:06:34
+homogeneous coordinates so we have seen this with for example chaining transformations or inverting
+1:06:39
+transformations which can be done very elegantly and dramatically simplifies the mathematical operations that you
+1:06:46
+have so especially if you think about a point from the 3d volt which is snapped into a camera
+1:06:52
+an image you have several coordinate systems involved where's the camera in the world
+1:06:58
+what how are the internal mappings in our camera um how the projection is done maybe lens
+1:07:04
+distortions come in later on and for a lot of those operations that we do we can actually write them down
+1:07:09
+in this transformations in homogeneous coordinates and then these are just simple matrix multiplications so
+1:07:16
+the math gets much easier if you use homogeneous coordinates in a lot of
+1:07:21
+cases the other interesting thing is that the homogeneous coordinates can represent
+1:07:27
+points at infinity explicitly so we can recover or maintain the direction in which that point lies
+1:07:34
+even though the point is is infinitely far away and there's also something that becomes very useful for bearing only
+1:07:39
+sensors so cameras which or sensors which only measures directions such as regular cameras and homogeneous
+1:07:46
+coordinates do that or realize this by adding one extra dimension
+1:07:51
+and the transition between the euclidean world and the homogeneous world the other way around is just
+1:07:57
+adding or removing this last dimension if you add it you add a one in there if you remove it you need to
+1:08:02
+normalize it so that it the the homogeneous vector so it becomes one and the last dimension and then you can actually drop the last dimension
+1:08:08
+and the key thing is as a result of this all the homogeneous elements are only defined up to scale this holds for
+1:08:14
+vectors representing points lines but also for homogeneous matrices they're only defined
+1:08:20
+up to a scaling factor homogeneous coordinates can also be disadvantages in a few
+1:08:25
+situations so if you for example need to solve certain complex
+1:08:30
+linear systems um as we will see it also later on the course for example in bundle adjustment and then you have the effect that the
+1:08:37
+scaling parameter adds a lot of potential unknowns to your equations because you're increasing the number of
+1:08:42
+unknowns because everything is only defined up to scale factor and in this situations it can be
+1:08:47
+suboptimal and you may want to go back to euclidean coordinates in those situations there are very few
+1:08:53
+but sometimes it's worse going back to homogeneous coordinates because you have a smaller number of unknowns that you
+1:08:58
+have especially for large systems this can be advantageous but the key thing you need to take into
+1:09:03
+account in here is that homogeneous coordinates are a common tool that we are using in the remaining part
+1:09:08
+of this course or actually your whole study program so make sure you're familiar with homogeneous coordinates
+1:09:15
+whenever you work in robotics division photogrammetry you will need to know
+1:09:21
+what homogeneous coordinates are and how to deal with them what others are if you want to read through a few things
+1:09:27
+that i said i recommend the book by wolfgang foster and verbal on for photogrammetric computer division we
+1:09:33
+have a couple of books here also in the library and there are these chapters 5.1 and 6.1
+1:09:38
+on homogeneous coordinates points and lines basically what i've presented here and also transformations
+1:09:44
+where you which you can study you can rehearse this and even go deeper because there actually is more information in
+1:09:50
+there that what i have presented here so with this i think thank you very much for your attention and i hope
+1:09:57
+i could stimulate your interest in homogeneous coordinates and that you will study them at home and
+1:10:03
+be able to use them on a daily basis because they're really a very very useful tool when you have to do a
+1:10:11
+lot of transformations so that's it thank you very much for your attention and see you soon in the new courses thank you
